@@ -240,5 +240,8 @@ ORDER BY months;
 - **Create a visualization dashboard** using Tableau or Power BI
 - **Perform deeper analysis** on industry trends and economic impacts
 
+## Contact Information
+Feel free to reach out with feedback or questions:
+- **Email**: [akinolaiyin@gmail.com]
+
 ---
-This project demonstrates SQL skills in data cleaning, transformation, and analysis. Feel free to explore the dataset and modify queries to gain additional insights!
