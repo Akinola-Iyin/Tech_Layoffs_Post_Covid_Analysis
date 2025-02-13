@@ -224,7 +224,7 @@ ORDER BY months;
 ## Conclusion
 - The dataset required significant cleaning, including duplicate removal, standardization, and handling of missing values.
 - The majority of layoffs occurred in **2022 and 2023**, with **Amazon, Google, Meta, and Microsoft** being the most affected companies.
-- The **tech and finance** industries had the highest layoffs.
+- The **consumer and retail** industries had the highest layoffs.
 
 ## Repository Structure
 ```
