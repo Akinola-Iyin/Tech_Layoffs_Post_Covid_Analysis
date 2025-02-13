@@ -126,50 +126,62 @@ ALTER TABLE layoffs_staging2 MODIFY COLUMN `date` DATE;
 ```sql
 SELECT max(total_laid_off) max_layoff, min(total_laid_off) min_layoff FROM layoffs_staging2;
 ```
+![image](https://github.com/user-attachments/assets/b865ee44-cc7e-4d75-911e-97721a969adc)
 
 2. **Largest single layoff:**
 
 ```sql
 SELECT company, total_laid_off FROM layoffs_staging2 ORDER BY total_laid_off DESC LIMIT 1;
 ```
-![image](https://github.com/user-attachments/assets/b865ee44-cc7e-4d75-911e-97721a969adc)
-
+![image](https://github.com/user-attachments/assets/a0152457-0132-4aea-9908-09b8bb1a9e1a)
 
 3. **Top 5 companies with the highest layoffs:**
 
 ```sql
 SELECT company, SUM(total_laid_off) AS total_layoffs FROM layoffs_staging2 GROUP BY company ORDER BY total_layoffs DESC LIMIT 5;
 ```
+![image](https://github.com/user-attachments/assets/786adf0c-61e9-447f-af9b-c85f0c7fe9ac)
+
 
 4. **Top 5 countries with the highest layoffs:**
 
 ```sql
-SELECT country, SUM(total_laid_off) stl FROM layoffs_staging2 GROUP BY country ORDER BY stl DESC LIMIT 5;
+SELECT country, SUM(total_laid_off) total_laid_off FROM layoffs_staging2 GROUP BY country ORDER BY total_laid_off DESC LIMIT 5;
 ```
+![image](https://github.com/user-attachments/assets/a6e05fa8-3867-4bfa-93d8-5566b1a846d2)
+
 
 5. **Top 5 locations with the highest layoffs:**
 
 ```sql
-SELECT location, SUM(total_laid_off) stl FROM layoffs_staging2 GROUP BY location ORDER BY stl DESC;;
+SELECT location, SUM(total_laid_off) total_laid_off FROM layoffs_staging2 GROUP BY location ORDER BY total_laid_off DESC LIMIT 5;
 ```
+![image](https://github.com/user-attachments/assets/08df4dcb-8ac5-44e1-ada6-1714c93527bb)
+
 
 6. **Companies that shut down completely (100% layoffs):**
 
 ```sql
-SELECT COUNT(company) FROM layoffs_staging2 WHERE percentage_laid_off = 1;
+SELECT COUNT(company) total_no_of_shutdown_companies FROM layoffs_staging2 WHERE percentage_laid_off = 1;
 ```
+![image](https://github.com/user-attachments/assets/7175d76b-5d15-499e-8514-fd1891070881)
+
 
 7. **Total layoffs per year:**
 
 ```sql
-SELECT YEAR(date) AS year, SUM(total_laid_off) FROM layoffs_staging2 GROUP BY year ORDER BY year ASC;
+SELECT YEAR(date) AS year, SUM(total_laid_off) total_laid_off FROM layoffs_staging2 GROUP BY year ORDER BY year ASC;
 ```
+![image](https://github.com/user-attachments/assets/1e4cb48e-df48-4a2b-8e06-d31d8e3fa799)
 
-8. **Top industries affected:**
+
+8. **Top 5 industries affected:**
 
 ```sql
 SELECT industry, SUM(total_laid_off) AS layoffs FROM layoffs_staging2 GROUP BY industry ORDER BY layoffs DESC LIMIT 5;
 ```
+![image](https://github.com/user-attachments/assets/f54b3847-2bc2-468d-86fa-7979e8ed7dc9)
+
 
 9. **Top 3 companies with the most layoffs in each year:**
 
@@ -191,6 +203,8 @@ FROM Company_Ranking
 WHERE Ranking <=3
 AND `YEARS` IS NOT NULL;
 ```
+![image](https://github.com/user-attachments/assets/23fca0f1-0e1a-4027-a022-4e4a8ce46581)
+
 
 10. **Rolling total of layoffs per month:**
 
