@@ -37,7 +37,31 @@ WITH duplicate_cte AS (
 SELECT * FROM duplicate_cte WHERE row_num > 1;
 ```
 
-To remove duplicates, a new table was created, and rows with `row_num > 1` were deleted.
+To remove duplicates, a new table was created similar to the layoffs_staging table but with the row number as a new column, the table was populated with the values from the cte above and rows with `row_num > 1` were deleted.
+
+```sql
+CREATE TABLE `layoffs_staging2` (
+  `company` text,
+  `location` text,
+  `industry` text,
+  `total_laid_off` int DEFAULT NULL,
+  `percentage_laid_off` text,
+  `date` text,
+  `stage` text,
+  `country` text,
+  `funds_raised_millions` int DEFAULT NULL,
+  `row_num` int
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+```sql
+INSERT INTO layoffs_staging2
+SELECT *, 
+row_number() OVER(
+PARTITION BY company, location, industry, total_laid_off, percentage_laid_off,
+ `date`, stage, country, funds_raised_millions) row_num
+FROM layoffs_staging;
+```
 
 ```sql
 DELETE FROM layoffs_staging2 WHERE row_num > 1;
@@ -54,6 +78,8 @@ UPDATE layoffs_staging2 SET company = TRIM(company);
 
 ```sql
 UPDATE layoffs_staging2 SET location = 'Dusseldorf' WHERE location LIKE '%sseldorf%';
+UPDATE layoffs_staging2 SET location = 'Florianopolis' WHERE location LIKE 'Florian%';
+UPDATE layoffs_staging2 SET location = 'Malmo' WHERE location LIKE 'Malm%';
 UPDATE layoffs_staging2 SET industry = 'Crypto' WHERE industry LIKE 'Crypto%';
 ```
 
@@ -95,34 +121,90 @@ ALTER TABLE layoffs_staging2 MODIFY COLUMN `date` DATE;
 ### 5. Exploratory Data Analysis (EDA)
 
 #### Key Insights:
-1. **Largest single layoff:**
+1. **Maximum and Minimum Layoffs:**
+
+```sql
+SELECT max(total_laid_off) max_layoff, min(total_laid_off) min_layoff FROM layoffs_staging2;
+```
+
+2. **Largest single layoff:**
 
 ```sql
 SELECT company, total_laid_off FROM layoffs_staging2 ORDER BY total_laid_off DESC LIMIT 1;
 ```
+![image](https://github.com/user-attachments/assets/b865ee44-cc7e-4d75-911e-97721a969adc)
 
-2. **Top 5 companies with the highest layoffs:**
+
+3. **Top 5 companies with the highest layoffs:**
 
 ```sql
 SELECT company, SUM(total_laid_off) AS total_layoffs FROM layoffs_staging2 GROUP BY company ORDER BY total_layoffs DESC LIMIT 5;
 ```
 
-3. **Companies that shut down completely (100% layoffs):**
+4. **Top 5 countries with the highest layoffs:**
+
+```sql
+SELECT country, SUM(total_laid_off) stl FROM layoffs_staging2 GROUP BY country ORDER BY stl DESC LIMIT 5;
+```
+
+5. **Top 5 locations with the highest layoffs:**
+
+```sql
+SELECT location, SUM(total_laid_off) stl FROM layoffs_staging2 GROUP BY location ORDER BY stl DESC;;
+```
+
+6. **Companies that shut down completely (100% layoffs):**
 
 ```sql
 SELECT COUNT(company) FROM layoffs_staging2 WHERE percentage_laid_off = 1;
 ```
 
-4. **Total layoffs per year:**
+7. **Total layoffs per year:**
 
 ```sql
 SELECT YEAR(date) AS year, SUM(total_laid_off) FROM layoffs_staging2 GROUP BY year ORDER BY year ASC;
 ```
 
-5. **Top industries affected:**
+8. **Top industries affected:**
 
 ```sql
 SELECT industry, SUM(total_laid_off) AS layoffs FROM layoffs_staging2 GROUP BY industry ORDER BY layoffs DESC LIMIT 5;
+```
+
+9. **Top 3 companies with the most layoffs in each year:**
+
+```sql
+WITH Company_Year AS
+(
+SELECT company, YEAR(date) `YEARS`, SUM(total_laid_off) total_laid_off
+FROM layoffs_staging2
+GROUP BY company, `YEARS`
+ORDER BY `YEARS`
+),
+Company_Ranking AS
+(
+SELECT company, `YEARS`, total_laid_off, dense_rank() OVER(PARTITION BY `YEARS` ORDER BY total_laid_off DESC) AS Ranking
+FROM Company_Year
+)
+SELECT company, `YEARS`, total_laid_off, Ranking
+FROM Company_Ranking
+WHERE Ranking <=3
+AND `YEARS` IS NOT NULL;
+```
+
+10. **Rolling total of layoffs per month:**
+
+```sql
+WITH monthly_layoffs AS
+(
+SELECT SUBSTRING(date,1,7) months, SUM(total_laid_off) total_laid_off
+FROM layoffs_staging2
+GROUP BY months
+ORDER BY months
+)
+SELECT months, SUM(total_laid_off) OVER(ORDER BY months ASC) rolling_total
+FROM monthly_layoffs
+ORDER BY months;
 ```
 
 ## Conclusion
